@@ -1,0 +1,15 @@
+
+Experimental UI Framework
+-------------------------
+Copyright 2019 me-ans@GitHub
+
+You may use this code under the terms of the GPL v3 (see www.gnu.org/licenses).
+
+This code is experimental and preliminary and comes with no warranty of any kind.
+Due to its experimental nature, it is intended as example code for discussion and
+education. If you still want to use it for closed source applications, please
+contact the author via GitHub.
+
+THIS CODE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+DISCLAIMED.
