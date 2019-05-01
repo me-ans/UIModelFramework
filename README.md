@@ -9,5 +9,5 @@ There's a short whitepaper of sorts in the Docs folder.
 
 ### Status
 
-The proposed architecture is experimental, incomplete and buggy. Since it turned out to be less optimal than expected for the originally intended purpose, it can no longer be pursued with priority. It is unclear if and when I might find the time to eventually complete this in my spare time.
+The proposed architecture is experimental, incomplete and buggy. Since it turned out to be less optimal than expected for the originally intended purpose, it is now a personal project on the side. It is unclear if and when I might find the time to eventually complete this in my spare time.
 
