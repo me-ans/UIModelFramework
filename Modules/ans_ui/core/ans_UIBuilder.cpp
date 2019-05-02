@@ -411,9 +411,9 @@ void UIComponentProxy::paint (Graphics& g)
     if (selected)
         g.fillAll (Colour(Colours::lightblue).withAlpha(0.5f));
     else
-        g.fillAll (findColour (0x1000440 /*lassoFillColourId*/));
+        g.fillAll (Colour(Colours::white).withAlpha(0.1f));
     
-    g.setColour (findColour (0x1000441 /*lassoOutlineColourId*/));
+    g.setColour (Colour(Colours::white).withAlpha(0.5f));
     g.drawRect (getLocalBounds(), outlineThickness);
 }
 
