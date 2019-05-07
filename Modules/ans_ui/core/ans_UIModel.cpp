@@ -82,8 +82,10 @@ namespace ans
 
     void UIModel::openUIEditor()
     {
-        auto editor = new UIEditor (this->getClass(), this->getClass()->getDefaultSpec());
-        editor->open();
+        auto editor = UIEditor::getInstance();
+        editor->setUISpec (this->getClass()->getDefaultSpec());
+        if (!editor->hasOpenWindows())
+            editor->open();
     }
 
     void UIModel::openClone ()
@@ -97,7 +99,7 @@ namespace ans
     #pragma mark WindowUIModel
     #endif
 
-    WindowUIModel::WindowUIModel ()
+    WindowUIModel::WindowUIModel (WindowUIModel * master) : masterWindowModel (master)
     {
     }
 
@@ -110,36 +112,35 @@ namespace ans
     {
     }
 
-    TopLevelWindow* WindowUIModel::createWindow (UISpec* spec)
+    std::unique_ptr<TopLevelWindow> WindowUIModel::createWindow (UISpec* spec, bool open, const Rectangle<int>* frame)
     {
         if (spec == nullptr)
             return nullptr;
         
-        return UIBuilder::buildWindow (spec, this);
-    }
-
-    TopLevelWindow* WindowUIModel::open (UISpec* spec)
-    {
-        if (spec == nullptr)
-            return nullptr;
-        
-        auto window = createWindow (spec);
-        window->setVisible(true);
-        window->addToDesktop();
+        auto window = UIBuilder::buildWindow (spec, this);
+        if (open)
+        {
+            window->setVisible(true);
+            if (frame != nullptr)
+                window->setBounds (*frame);
+            window->addToDesktop();
+        }
         return window;
     }
 
-    TopLevelWindow* WindowUIModel::open (UISpec* spec, const Rectangle<int>& frame)
+    void WindowUIModel::open (UISpec* spec)
     {
-        auto window = open (spec);
-        if (window != nullptr)
-            window->setBounds (frame);
-        return window;
+        createWindow (spec).release();
     }
 
-    TopLevelWindow* WindowUIModel::open ()
+    void WindowUIModel::open (UISpec* spec, const Rectangle<int>& frame)
     {
-        return open (getClass()->getDefaultSpec());
+        createWindow (spec, true, &frame).release();
+    }
+
+    void WindowUIModel::open ()
+    {
+        createWindow (getClass()->getDefaultSpec(), true).release();
     }
 
     void WindowUIModel::closeAllWindows()
@@ -154,13 +155,26 @@ namespace ans
 
     void WindowUIModel::postClose (UIInstance& instance)
     {
+        //if (masterWindowModel == nullptr && !hasOpenWindows())
+        //    delete this;
+        
         if (TopLevelWindow::getNumTopLevelWindows() == 0)
-            JUCEApplication::getInstance()->systemRequestedQuit();
+            return JUCEApplication::getInstance()->systemRequestedQuit();
     }
 
     void WindowUIModel::openClone ()
     {
         open();
+    }
+    
+    bool WindowUIModel::hasOpenWindows()
+    {
+        for (int i = TopLevelWindow::getNumTopLevelWindows(); --i >= 0;)
+            if (auto win = dynamic_cast<UIWindowBase*> (TopLevelWindow::getTopLevelWindow (i)))
+                if (win->getModel() == this)
+                    return true;
+        
+        return false;
     }
 
     //==========================================================================================================

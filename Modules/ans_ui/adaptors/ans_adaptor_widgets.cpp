@@ -17,13 +17,13 @@ namespace ans {
 #pragma mark UIRadioButton
 #endif
 
-UIRadioButton::UIRadioButton (UIInstance* owner, const RadioSpec& spec) :
+UIRadioButton::UIRadioButton (std::shared_ptr<UIInstance> instance, const RadioSpec& spec) :
     ToggleButton (spec.identifier),
-    UIAdaptor (owner, spec),
+    UIAdaptor (instance, spec),
     value (spec.groupValue),
     groupMaster (-1)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     
     if (!spec.label.isEmpty())
         setButtonText (spec.label);
@@ -98,11 +98,11 @@ void UIRadioButton::clicked ()
 #pragma mark UISlider
 #endif
 
-UISlider::UISlider (UIInstance* owner, const SliderSpecBase& spec) :
+UISlider::UISlider (std::shared_ptr<UIInstance> instance, const SliderSpecBase& spec) :
     Slider (spec.identifier),
-    UIAdaptor (owner, spec)
+    UIAdaptor (instance, spec)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     
     setRange (spec.valueRange.getStart(), spec.valueRange.getEnd(), spec.valueInterval);
     
@@ -136,11 +136,11 @@ UISlider::~UISlider ()
 #pragma mark UIComboBox
 #endif
 
-UIComboBox::UIComboBox (UIInstance* owner, const ComboSpecBase& spec) :
+UIComboBox::UIComboBox (std::shared_ptr<UIInstance> instance, const ComboSpecBase& spec) :
     ComboBox (spec.identifier),
-    UIAdaptor (owner, spec)
+    UIAdaptor (instance, spec)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     if (spec.type == UIComponentClass::Type::Popup)
     {
         setEditableText (false);

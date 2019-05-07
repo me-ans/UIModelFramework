@@ -19,7 +19,7 @@ namespace ans
 #pragma mark UIInstance
 #endif
 
-UIInstance::UIInstance (UIModel* uiModel, UISpec* uiSpec, UIInstance* parentInstance, bool forMockup) :
+UIInstance::UIInstance (UIModel* uiModel, UISpec* uiSpec, std::shared_ptr<UIInstance> parentInstance, bool forMockup) :
     parent (parentInstance),
     spec (uiSpec),
     model (uiModel),
@@ -32,10 +32,8 @@ UIInstance::~UIInstance ()
 {
     clear();
     
-    if (parent != nullptr)
-        parent->childWasDeleted (this);
-    
-    masterReference.clear();
+    if (auto instance = parent.lock())
+        instance->childWasDeleted (this);
 }
 
 void UIInstance::clear()
@@ -51,12 +49,12 @@ void UIInstance::clear()
     registry.clear();
 }
 
-UIInstance* UIInstance::getChildInstanceFor (UIModel* uiModel, UISpec* uiSpec)
+std::shared_ptr<UIInstance> UIInstance::getChildInstanceFor (UIModel* uiModel, UISpec* uiSpec)
 {
     if (auto instance = findChildFor (uiModel, uiSpec))
         return instance;
     
-    auto instance = new UIInstance (uiModel, uiSpec, this);
+    auto instance = std::make_shared<UIInstance> (uiModel, uiSpec, shared_from_this());
     children.add (instance);
     return instance;
 }
@@ -124,12 +122,12 @@ Component* UIInstance::getComponent (const ComponentID& identifier, bool lookInt
         return nullptr;
 }
 
-UIInstance* UIInstance::getMockupUI()
+std::shared_ptr<UIInstance> UIInstance::getMockupUI()
 {
     if (mockupUI == nullptr)
-        mockupUI = new UIInstance (getModel(), getSpec(), parent, true);
+        mockupUI = std::make_shared<UIInstance> (getModel(), getSpec(), parent.lock(), true);
     
-    return mockupUI.get();
+    return mockupUI;
 }
 
 String UIInstance::printDebug()
@@ -139,11 +137,10 @@ String UIInstance::printDebug()
 
 void UIInstance::childWasDeleted (UIInstance* child)
 {
-    DBG (printDebug() << " removing " << child->printDebug());
-    children.removeObject (child, false);
+    children.removeIf ([&](auto each){ return each.get() == child; });
 }
 
-UIInstance* UIInstance::findChildFor (UIModel* m, UISpec* s)
+std::shared_ptr<UIInstance> UIInstance::findChildFor (UIModel* m, UISpec* s)
 {
     for (auto existing : children)
         if (existing->getModel() == m && existing->getSpec() == s)
@@ -154,7 +151,7 @@ UIInstance* UIInstance::findChildFor (UIModel* m, UISpec* s)
 
 void UIInstance::updateLayoutFromSpec()
 {
-    if (auto rootSpec = getSpec()->getRootSpec())
+    if (auto rootSpec = getSpec()->getRootComponentSpec())
     {
         updateLayoutFromSpec (rootSpec);
         if (auto adaptor = getAdaptor (rootSpec->identifier))

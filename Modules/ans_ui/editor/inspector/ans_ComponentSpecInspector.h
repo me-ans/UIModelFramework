@@ -36,31 +36,35 @@ public:
     /** Get the UISpec being edited in the parent UIEditor */
     UISpec* getSelectedUISpec();
     
-    /** Get the current spec that is being edited */
-    ComponentSpec* getSelectedSpec () { return selectedSpec; }
+    /** Get the current ComponentSpec that is being edited */
+    ComponentSpec* getSelectedComponentSpec () { return selectedComponentSpec; }
     
-    /** Replace the current spec to be edited */
-    ComponentSpec* setSelectedSpec (ComponentSpec* specToEdit)
+    /** Replace the current ComponentSpec to be edited. If this is null, the UISpec's root component spec is selected */
+    ComponentSpec* setSelectedComponentSpec (ComponentSpec* specToEdit)
     {
-        selectedSpec = specToEdit;
+        if (specToEdit != nullptr)
+            selectedComponentSpec = specToEdit;
+        else
+            selectedComponentSpec = getSelectedUISpec()->getRootComponentSpec();
+        
         changed ({ComponentSelection, ComponentSettings});
-        return selectedSpec;
+        return selectedComponentSpec;
     }
     
     const ComponentID getSuggestedID (const ComponentID& base);
     
     
-    String  getIdentifier () { return selectedSpec->identifier; }
-    void    setIdentifier (const String& input) { selectedSpec->identifier = input; updateLayout(); }
+    String  getIdentifier () { return selectedComponentSpec->identifier; }
+    void    setIdentifier (const String& input) { selectedComponentSpec->identifier = input; updateLayout(); }
     
-    String  getLabel () { return selectedSpec->label; }
-    void    setLabel (const String& input) { selectedSpec->label = input; updateLayout();  }
+    String  getLabel () { return selectedComponentSpec->label; }
+    void    setLabel (const String& input) { selectedComponentSpec->label = input; updateLayout();  }
     
-    String  getTooltip () { return selectedSpec->tooltip; }
-    void    setTooltip (const String& input) { selectedSpec->tooltip = input; updateLayout();  }
+    String  getTooltip () { return selectedComponentSpec->tooltip; }
+    void    setTooltip (const String& input) { selectedComponentSpec->tooltip = input; updateLayout();  }
     
-    int     getFocusOrder () { return selectedSpec->focusOrder; }
-    void    setFocusOrder (int input) { selectedSpec->focusOrder = input; updateLayout();  }
+    int     getFocusOrder () { return selectedComponentSpec->focusOrder; }
+    void    setFocusOrder (int input) { selectedComponentSpec->focusOrder = input; updateLayout();  }
     
     /**
      Programmatically builds the UISpec for the inspector by populating a CompositeSpec
@@ -70,7 +74,7 @@ public:
      */
     virtual void populateInspector (CompositeSpec* composite, LayoutCursor& cursor)
     {
-        if (selectedSpec == nullptr)
+        if (selectedComponentSpec == nullptr)
             return;
         
         cursor.setCellSize ({0.33, 22});
@@ -121,15 +125,16 @@ public:
         composite->addComponent (layoutInspector);
     }
     
-    String getInspectorTitle () { return selectedSpec->getClass()->getUserLabel(); }
+    String getInspectorTitle () { return selectedComponentSpec->getClass()->getUserLabel(); }
                                      
     void populateCanvas (UIComposite* canvas)
     {
-        auto content = new CompositeSpec ("content");
-        ScopedPointer<UISpec> ui = new UISpec (*getClass(), content);
         LayoutCursor cursor;
-        populateInspector (content, cursor);
-        populateComposite (canvas, ui);
+        auto content = std::make_unique<CompositeSpec> ("content");
+        populateInspector (content.get(), cursor);
+        
+        auto ui = std::make_unique<UISpec> (*getClass(), std::move(content));
+        populateComposite (canvas, ui.get());
     }
                                      
      void populateLayoutCanvas (UIComposite* canvas)
@@ -251,7 +256,7 @@ public:
     
 private:
     
-    ComponentSpec* selectedSpec = nullptr;
+    ComponentSpec* selectedComponentSpec = nullptr;
     LayoutSpecInspector layoutInspector;
 };
     

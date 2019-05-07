@@ -40,7 +40,7 @@ class UIListBox :
         public UIAdaptor
 {
 public:
-    UIListBox (UIInstance* owner, const ListSpec& spec);
+    UIListBox (std::shared_ptr<UIInstance> instance, const ListSpec& spec);
    ~UIListBox ();
     
     void setComponentState (const Binding::Purpose& p, UIListModelBase& contents) override;
@@ -52,7 +52,7 @@ public:
 private:
     Selection currentSelection();
     
-    UIListModelBase* listModel;
+    WeakReference<UIListModelBase> listModel;
 };
 
 
@@ -70,7 +70,7 @@ public:
         views ()
     {}
     
-    virtual ~UIListModelBase () {}
+    virtual ~UIListModelBase () { masterReference.clear(); }
     
     void addView (UIListBox* owner) { views.add (owner); }
     void removeView (UIListBox* owner) { views.remove (owner); }
@@ -82,6 +82,8 @@ public:
     
 protected:
     ListenerList<UIListBox> views;
+    
+    JUCE_DECLARE_WEAK_REFERENCEABLE (UIListModelBase)
 };
 
 
@@ -89,6 +91,10 @@ protected:
  UIListModel extends ListBoxModel for communication with UIModel and the adaptor UIListBox. It maintains
  a selection state that UIModel can use to select/unselect objects. You can configure this class for
  more elaborate and non-trivial objects.
+ 
+ UIListModel merely handles pointers to objects owned by someone else. You are responsible for keeping
+ these objects alive as long as this model exists. For simple use cases, e.g. a list of strings or fixed
+ collection of choices, you can supply it with physical data that is kept by the model.
  */
 
 template <typename ObjectClass>
@@ -108,7 +114,9 @@ public:
    ~UIListModel () {}
     
     /**
-     Initialise or replace all list items with pointers to objects.
+     Initialise or replace all list items with pointers to objects. UIListModel does not take
+     ownership of these, so you are responsible for keeping them alive during the lifespan of
+     this model!
      */
     void setList (const Array<ObjectClass*>& items)
     {
@@ -120,6 +128,7 @@ public:
     
     /**
      Make UIListModel reference an external array of physical copy-by-value objects.
+     Your are responsible for keeping the external array alive during the lifespan of this model!
      */
     void setListReference (Array<ObjectClass>& items)
     {
@@ -132,6 +141,8 @@ public:
     
     /**
      Make UIListModel maintain an array of physical objects so you need not to do this.
+     This is best for simple immediate lists, e.g. a collection of choices represented as strings,
+     which you don't want to maintain outside this model. ObjectClass must have a copy constructor.
      */
     void setListData (const Array<ObjectClass>& items)
     {

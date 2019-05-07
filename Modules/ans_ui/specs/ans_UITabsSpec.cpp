@@ -44,8 +44,7 @@ String TabPageSpec::generateSourceCPP (Model::Class* modelClass) const
     out << ");";
     return out;
 }
-
-
+    
 void TabPageList::addPage (const TabPageSpec& page)
 {
     add (page);
@@ -55,8 +54,8 @@ void TabPageList::addPage (WeakReference<UISpec>& uiSpec, const TabPageSpec::Get
 {
     add (TabPageSpec
          (size(),
-          uiSpec->getRootSpec()->label,
-          uiSpec->getRootSpec()->identifier,
+          uiSpec->getRootComponentSpec()->label,
+          uiSpec->getRootComponentSpec()->identifier,
           modelGetter,
           FROM_SOURCE ([&](Model::Class* m) { return uiSpec.get(); }),
           TabPageSpec::SingleLambda));
@@ -66,8 +65,8 @@ void TabPageList::addPage (WeakReference<UISpec>& uiSpec)
 {
     add (TabPageSpec
          (size(),
-          uiSpec->getRootSpec()->label,
-          uiSpec->getRootSpec()->identifier,
+          uiSpec->getRootComponentSpec()->label,
+          uiSpec->getRootComponentSpec()->identifier,
           FROM_SOURCE ([&](UIModel* m) { return m; }),
           FROM_SOURCE ([&](Model::Class* m) { return uiSpec.get(); }),
           TabPageSpec::GlobalVariable));

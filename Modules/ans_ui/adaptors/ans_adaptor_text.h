@@ -21,7 +21,7 @@ class UITextEditor :
         public UIAdaptor
 {
 public:
-    UITextEditor (UIInstance* owner, const TextSpecBase& spec);
+    UITextEditor (std::shared_ptr<UIInstance> instance, const TextSpecBase& spec);
    ~UITextEditor();
     
     void getComponentState (const Binding::Purpose& p, var& value) override;
@@ -47,7 +47,7 @@ class UICodeEditor :
     public UIAdaptor
 {
 public:
-    UICodeEditor (UIInstance* owner, const TextSpecBase& spec);
+    UICodeEditor (std::shared_ptr<UIInstance> instance, const TextSpecBase& spec);
    ~UICodeEditor();
     
     void getComponentState (const Binding::Purpose& p, var& value) override;
@@ -56,7 +56,7 @@ public:
 private:
     CodeDocument document;
     CPlusPlusCodeTokeniser tokeniser;
-    ScopedPointer<CodeEditorComponent> editor;
+    std::unique_ptr<CodeEditorComponent> editor;
     LookAndFeel_V4 lookAndFeel;
 };
 

@@ -16,12 +16,12 @@ namespace ans {
     using namespace juce;
 
 
-UITabComposite::UITabComposite (UIInstance* owner, const TabsSpec& spec) :
-    UIComposite (owner, spec),
+UITabComposite::UITabComposite (std::shared_ptr<UIInstance> instance, const TabsSpec& spec) :
+    UIComposite (instance, spec),
     inhibit (false),
     currentPopulatedIndex (-1),
-    tabBar (new TabbedButtonBar (spec.orientation)),
-    tabContents (new UIComposite (owner, spec.identifier + "_Content"))
+    tabBarRef (nullptr),
+    tabContentsRef (nullptr)
 {
     int h = 30;
     {
@@ -33,8 +33,10 @@ UITabComposite::UITabComposite (UIInstance* owner, const TabsSpec& spec) :
             case TabbedButtonBar::Orientation::TabsAtRight:  frame.left = {1.0,-h}; break;
             case TabbedButtonBar::Orientation::TabsAtBottom: frame.top = {1.0,-h}; break;
         }
-        addComponent (tabBar, frame);
-        tabBar->addChangeListener (this);
+        auto tabBarComp = std::make_unique<TabbedButtonBar> (spec.orientation);
+        tabBarComp->addChangeListener (this);
+        tabBarRef = tabBarComp.get();
+        addComponent (std::move(tabBarComp), frame);
     }
     {
         LayoutFrame frame = LayoutFrame::entire();
@@ -45,12 +47,14 @@ UITabComposite::UITabComposite (UIInstance* owner, const TabsSpec& spec) :
             case TabbedButtonBar::Orientation::TabsAtRight:  frame.right.offset -= h; break;
             case TabbedButtonBar::Orientation::TabsAtBottom: frame.bottom.offset -= h; break;
         }
-        addComponent (tabContents, frame);
+        auto tabContentsComp = std::make_unique<UIComposite> (instance, spec.identifier + "_Content");
+        tabContentsRef = tabContentsComp.get();
+        addComponent (std::move(tabContentsComp), frame);
     }
     
     if (!spec.pages.isEmpty())
     {
-        pages = spec.pages;
+        pages = std::make_shared<TabPageList> (spec.pages);
         buildPages();
     }
     inhibit = false;
@@ -59,8 +63,8 @@ UITabComposite::UITabComposite (UIInstance* owner, const TabsSpec& spec) :
 
 UITabComposite::~UITabComposite ()
 {
-    if (tabBar != nullptr)
-        tabBar->removeChangeListener (this);
+    if (tabBarRef != nullptr)
+        tabBarRef->removeChangeListener (this);
     
     notificationPre = nullptr;
     notificationPost = nullptr;
@@ -69,19 +73,19 @@ UITabComposite::~UITabComposite ()
 
 void UITabComposite::deleteContents ()
 {
-    tabBar = nullptr;
-    tabContents = nullptr;
+    tabBarRef = nullptr;
+    tabContentsRef = nullptr;
     UIComposite::deleteContents();
 }
 
 int UITabComposite::getSelectedIndex ()
 {
-    return tabBar->getCurrentTabIndex();
+    return tabBarRef->getCurrentTabIndex();
 }
 
 void UITabComposite::setSelectedIndex (int index)
 {
-    tabBar->setCurrentTabIndex (index, false);
+    tabBarRef->setCurrentTabIndex (index, false);
     
     if (index != currentPopulatedIndex)
     {
@@ -93,22 +97,32 @@ void UITabComposite::setSelectedIndex (int index)
 ComponentID UITabComposite::getSelectedID ()
 {
     int i = getSelectedIndex();
-    if (i < 0 || i > pages.size())
+    if (i < 0 || i > getPages()->size())
         return "";
     else
-        return pages.getReference(i).identifier;
+        return getPages()->getReference(i).identifier;
+}
+    
+std::shared_ptr<TabPageList> UITabComposite::getPages()
+{
+    if (pages == nullptr)
+        pages = std::make_shared<TabPageList>();
+    return pages;
 }
 
 void UITabComposite::clearPages ()
 {
-    pages.clear();
+    if (pages != nullptr)
+        pages->clear();
 }
 
 void UITabComposite::buildPages ()
 {
-    tabBar->clearTabs();
-    for (auto page : pages)
-        tabBar->addTab (page.label, Colours::black, -1);
+    tabBarRef->clearTabs();
+    
+    if (pages != nullptr)
+        for (auto page : *pages)
+            tabBarRef->addTab (page.label, Colours::black, -1);
 }
 
 void UITabComposite::addPage (const String& label,
@@ -116,15 +130,15 @@ void UITabComposite::addPage (const String& label,
                               TabPageSpec::GetModelExpression modelGetter,
                               TabPageSpec::GetSpecExpression specGetter)
 {
-    pages.addPage (label, pageId, modelGetter, specGetter);
+    getPages()->addPage (label, pageId, modelGetter, specGetter);
 }
 
 void UITabComposite::populateContents (int index)
 {
-    if (index < 0 || index >= pages.size())
+    if (index < 0 || index >= getPages()->size())
         return;
     
-    const TabPageSpec& page = pages.getReference(index);
+    const TabPageSpec& page = getPages()->getReference(index);
     
     if (notificationPre != nullptr)
         notificationPre();
@@ -136,7 +150,7 @@ void UITabComposite::populateContents (int index)
         if (page.getSpec.getObject() != nullptr)
             spec = page.getSpec.getObject()(getModel()->getClass());
         
-        UIAdaptor::getModel()->populateComposite (tabContents, spec);
+        UIAdaptor::getModel()->populateComposite (tabContentsRef, spec);
         
     } else {
         // External UIModel or EmbeddedUIModel
@@ -148,7 +162,7 @@ void UITabComposite::populateContents (int index)
         if (page.getSpec.getObject() != nullptr)
             spec = page.getSpec.getObject()(getModel()->getClass());
         
-        externalModel->populateComposite (tabContents, spec);
+        externalModel->populateComposite (tabContentsRef, spec);
     }
     
     if (notificationPost != nullptr)
@@ -165,6 +179,16 @@ void UITabComposite::changeListenerCallback (ChangeBroadcaster* source)
         populateContents (currentPopulatedIndex);
     }
 }
+    
+    void UITabComposite::setComponentState (const Binding::Purpose& p, std::shared_ptr<TabPageList> contents)
+{
+    if (p == Binding::Purpose::GetValue)
+    {
+        pages = contents;
+        buildPages();
+        return;
+    }
+}
 
 void UITabComposite::getComponentState (const Binding::Purpose& p, var& value)
 {
@@ -176,7 +200,7 @@ void UITabComposite::getComponentState (const Binding::Purpose& p, var& value)
     
     if (p == Binding::Purpose::SetLabel)
     {
-        value = pages.getReference (currentPopulatedIndex).label;
+        value = getPages()->getReference (currentPopulatedIndex).label;
         return;
     }
     UIAdaptor::getComponentState (p, value);
@@ -186,23 +210,11 @@ void UITabComposite::setComponentState (const Binding::Purpose& p, const var& va
 {
     if (p == Binding::Purpose::GetSelection)
         return setSelectedIndex (value);
-
-    if (p == Binding::Purpose::GetValue)
-    {
-        if (TabPageList::Ptr tabs = dynamic_cast<TabPageList*>(value.getObject()))
-        {
-            clearPages();
-            for (auto page : *tabs)
-                pages.addPage (page);
-            buildPages();
-            return;
-        }
-    }
     
     if (p == Binding::Purpose::GetLabel)
     {
-        pages.getReference (currentPopulatedIndex).label = value.toString();
-        tabBar->setTabName (currentPopulatedIndex, pages.getReference (currentPopulatedIndex).label);
+        getPages()->getReference (currentPopulatedIndex).label = value.toString();
+        tabBarRef->setTabName (currentPopulatedIndex, getPages()->getReference (currentPopulatedIndex).label);
         return;
     }
     UIAdaptor::setComponentState (p, value);

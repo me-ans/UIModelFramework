@@ -33,8 +33,8 @@ public:
     /** Constructor for global UISpec, as used in generated *.specs.cpp files */
     UISpec (Model::Class& modelClassRef, const String& specName_, SpecLambda contentCreator, bool beDefault = false);
     
-    /** Constructor for temporary specs for programmatical use */
-    UISpec (Model::Class& modelClassRef, ComponentSpec* content);
+    /** Constructor for temporary specs for programmatical use (takes ownership of content) */
+    UISpec (Model::Class& modelClassRef, std::unique_ptr<ComponentSpec> content);
     
    ~UISpec ();
     
@@ -48,7 +48,7 @@ public:
      Return the ComponentSpec provided by this UISpec. This may be a WindowSpec or a CompositeSpec,
      depending on whether this is for a window, or for an embedded UI
      */
-    ComponentSpec* getRootSpec ();
+    ComponentSpec* getRootComponentSpec ();
     
     /** Generate C++ source code for the .specs.cpp file of the model */
     String generateSourceCPP (Model::Class* modelClass);
@@ -69,13 +69,13 @@ public:
     const String getItemString() const override { return getName(); }
 
 private:
-    ComponentSpec* createSpec ();
+    std::unique_ptr<ComponentSpec> createSpec ();
     ComponentSpec* findComponentSpec (const ComponentID& identifier, ComponentSpec* current, ComponentSpec* exclude = nullptr);
     
     Model::Class* modelClass;
     String specName;
     SpecLambda specLambda;
-    ScopedPointer<ComponentSpec> rootSpec;
+    std::unique_ptr<ComponentSpec> rootSpec;
     File filename;
     bool defaultSpec;
     

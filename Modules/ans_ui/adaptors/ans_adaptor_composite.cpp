@@ -15,38 +15,31 @@
 namespace ans {
     using namespace juce;
 
-UIComposite::UIComposite (UIInstance* owner, const CompositeSpecBase& spec) :
+UIComposite::UIComposite (std::shared_ptr<UIInstance> instance, const CompositeSpecBase& spec) :
     Component (spec.identifier),
-    UIAdaptor (owner, spec),
+    UIAdaptor (instance, spec),
     hasBackgroundColour (false)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     
     if (spec.hasBackgroundColour())
         setBackgroundColour (spec.backgroundColour.colour);
 }
 
-UIComposite::UIComposite (UIInstance* owner, const String& name) :
+UIComposite::UIComposite (std::shared_ptr<UIInstance> instance, const String& name) :
     Component (name),
-    UIAdaptor (owner, ComponentSpec (UIComponentClass::Type::Composite, name)), // dummy spec
+    UIAdaptor (instance, ComponentSpec (UIComponentClass::Type::Composite, name)), // dummy spec
     hasBackgroundColour (false)
 {
 }
 
 UIComposite::~UIComposite ()
 {
-    deleteAllChildren();
 }
 
 void UIComposite::deleteContents()
 {
-    deleteAllChildren();
-}
-
-void UIComposite::addComponent (Component* comp, const LayoutFrame& frame)
-{
-    comp->setPositioner (new FramePositioner (*comp, frame));
-    addAndMakeVisible (comp);
+    ownedComponents.clear();
 }
 
 void UIComposite::resized()

@@ -22,7 +22,7 @@ class UIWindowBase : public UIAdaptor
 {
 public:
     /** The window takes ownership of the UIInstance! Therefore it is important to pass a new instance here. */
-    UIWindowBase (UIInstance* instance, const WindowSpec& spec);
+    UIWindowBase (std::shared_ptr<UIInstance> instance, const WindowSpec& spec);
    ~UIWindowBase ();
     
     bool isWindowAdaptor() override { return true; }
@@ -36,8 +36,8 @@ public:
     void updateLayoutFromSpec();
     
 protected:
-    UIInstance::Ptr uiInstance;
-    ScopedPointer<LookAndFeel> look;
+    std::shared_ptr<UIInstance> uiInstance;
+    std::unique_ptr<LookAndFeel> look;
     
 };
 
@@ -54,10 +54,16 @@ public:
      Constructs a DocumentWindow according to a WindowSpec. The window takes ownership of the UIInstance!
      Therefore it is important to pass a new instance here.
      */
-    UIDocumentWindow (UIInstance* instance, const WindowSpec& spec);
+    UIDocumentWindow (std::shared_ptr<UIInstance> instance, const WindowSpec& spec);
    ~UIDocumentWindow ();
     
     UIComposite* getUIComposite() override;
+    
+    void addComponent (std::unique_ptr<Component> comp) override
+    {
+        setContentNonOwned (comp.get(), false);
+        ownedComponents.add (std::move(comp));
+    }
     
     void setComponentState (const Binding::Purpose& p, const String& value) override { DocumentWindow::setName (value); }
     

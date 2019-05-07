@@ -18,9 +18,9 @@ namespace ans {
 class UITreeView;
 
 /**
- Base class for differently typed tree items, serving the purpose as a common denominator for
- UIAdaptor API. An entire tree is owned by its root item, so if the root item is deleted,
- this will delete all children recursively.
+ Base class for differently typed tree items, serving the purpose as a common denominator for UIAdaptor API.
+ An entire tree is owned by its root item, so if the root item is deleted, this will delete all children
+ recursively.
  */
 
 class UITreeItemBase : public TreeViewItem
@@ -173,6 +173,8 @@ protected:
     virtual void ensureValidSelection() {}
     
     ListenerList<UITreeView> views;
+    
+    JUCE_DECLARE_WEAK_REFERENCEABLE (UITreeModelBase)
 };
 
 
@@ -197,7 +199,7 @@ public:
             setSingleSelection (initial);
     }
     
-   ~UITreeModel () {}
+   ~UITreeModel () { masterReference.clear(); }
     
     
     /** Replace the entire tree with a new root object */
@@ -205,7 +207,7 @@ public:
     {
         identCounter = 0;
         if (item != nullptr)
-            root = new ItemType (item, identCounter);
+            root = std::make_unique<ItemType> (item, identCounter);
         else
             root = nullptr;
         ensureValidSelection();
@@ -220,7 +222,7 @@ public:
             return nullptr;
     }
     
-    UITreeItemBase* getRootItem() override { return root; }
+    UITreeItemBase* getRootItem() override { return root.get(); }
     
     /** Get the unique index of an object in the tree, or -1 if no such object exists  */
     int getIndexOf (ObjectClass* o)
@@ -314,8 +316,10 @@ private:
             selection.set(0); // root
     }
     
-    ScopedPointer<ItemType> root;
+    std::unique_ptr<ItemType> root;
     int identCounter;
+    
+    JUCE_LEAK_DETECTOR (UITreeModel)
 };
 
 /**
@@ -326,10 +330,10 @@ class UITreeView :
         public UIAdaptor
 {
 public:
-    UITreeView (UIInstance* owner, const TreeSpec& spec);
+    UITreeView (std::shared_ptr<UIInstance> instance, const TreeSpec& spec);
    ~UITreeView ();
     
-    void setComponentState (const Binding::Purpose& p, UITreeModelBase& value) override;    
+    void setComponentState (const Binding::Purpose& p, UITreeModelBase& contents) override;    
     void getComponentState (const Binding::Purpose& p, Selection& value) override;
     void setComponentState (const Binding::Purpose& p, Selection& value) override;
     
@@ -343,7 +347,7 @@ private:
             root->enumerateTreeItems (each);
     }
     
-    UITreeModelBase* treeModel;
+    WeakReference<UITreeModelBase> treeModel;
 };
 
 

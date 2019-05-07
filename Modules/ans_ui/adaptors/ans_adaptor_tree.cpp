@@ -31,12 +31,12 @@ void UITreeItemBase::itemSelectionChanged (bool nowSelected)
 #pragma mark UITreeView
 #endif
 
-UITreeView::UITreeView (UIInstance* owner, const TreeSpec& spec) :
+UITreeView::UITreeView (std::shared_ptr<UIInstance> instance, const TreeSpec& spec) :
     TreeView (spec.identifier),
-    UIAdaptor (owner, spec),
+    UIAdaptor (instance, spec),
     treeModel (nullptr)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     
     setRootItemVisible (true);
     setMultiSelectEnabled (spec.enableMultipleSelection); // still depends on Selection being provided

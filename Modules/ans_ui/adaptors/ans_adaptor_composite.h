@@ -16,28 +16,26 @@ namespace ans {
 
 /**
  UIComposite extends juce::Component to serve as a general 'canvas' for replaceable content.
+ It supports adding children and features an optional background colour. The top-level content
+ Component of a window is a UIComposite. Other than juce::Component, UIComposite owns all its
+ children and deletes them when its contents are cleared or when UIComposite is deleted.
  */
+    
 class UIComposite :
         public juce::Component,
         public UIAdaptor
 {
 public:
-    UIComposite (UIInstance* owner, const CompositeSpecBase& spec);
+    UIComposite (std::shared_ptr<UIInstance> instance, const CompositeSpecBase& spec);
     
     /** Constructor for ad-hoc use without a spec */
-    UIComposite (UIInstance* owner, const String& name);
+    UIComposite (std::shared_ptr<UIInstance> instance, const String& name);
    ~UIComposite ();
     
     UIComposite* getUIComposite() override { return this; };
     
     /** Empty the composite by removing and deleting any owned children */
     virtual void deleteContents();
-    
-    /**
-     Add a child component bounded by a given LayoutFrame. 
-     UIComposite owns its children and takes care of deleting them!
-     */
-    virtual void addComponent (Component* comp, const LayoutFrame& frame);
     
     void setBackgroundColour (Colour colour);
     

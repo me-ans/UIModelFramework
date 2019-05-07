@@ -14,26 +14,36 @@
 namespace ans {
     using namespace juce;
 
-struct ArrayTools
-{
-    template <typename ElementClass, typename ArrayClass, typename LAMBDA>
-    static ElementClass* find (const ArrayClass& array, LAMBDA&& match)
+    struct ArrayTools
     {
-        for (ElementClass* each : array)
-            if (match (each))
-                return each;
-        return nullptr;
-    }
+        template <typename ElementClass, typename ArrayClass, typename LAMBDA>
+        static ElementClass* find (const ArrayClass& array, LAMBDA&& match)
+        {
+            for (ElementClass* each : array)
+                if (match (each))
+                    return each;
+            return nullptr;
+        }
+        
+        template <typename ElementClass, typename ArrayClass, typename LAMBDA1, typename LAMBDA2>
+        static ElementClass* find (const ArrayClass& array, LAMBDA1&& match, LAMBDA2&& absent)
+        {
+            for (ElementClass* each : array)
+                if (match (each))
+                    return each;
+            return absent();
+        }
+    };
     
-    template <typename ElementClass, typename ArrayClass, typename LAMBDA1, typename LAMBDA2>
-    static ElementClass* find (const ArrayClass& array, LAMBDA1&& match, LAMBDA2&& absent)
+    
+    /** A handy smart pointer for globals that are deleted/nulled at shutdown */
+    template <typename ObjectClass>
+    struct ClearedAtShutdown : public DeletedAtShutdown
     {
-        for (ElementClass* each : array)
-            if (match (each))
-                return each;
-        return absent();
-    }
-};
-
-
+        ClearedAtShutdown (std::shared_ptr<ObjectClass> p) : ptr(p) {}
+        
+        std::shared_ptr<ObjectClass> ptr;
+    };
+    
+    
 }

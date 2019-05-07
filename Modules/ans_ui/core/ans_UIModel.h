@@ -226,7 +226,7 @@ public:
     UIModel* topLevelModel() override { return parentModel->topLevelModel(); }
 
 private:
-    UIModel* parentModel;
+    WeakReference<UIModel> parentModel;
 };
 
 /**
@@ -253,8 +253,8 @@ public:
     METACLASS_END
     
     
-    WindowUIModel();
-   ~WindowUIModel();
+    WindowUIModel (WindowUIModel * master = nullptr);
+   ~WindowUIModel ();
     
     bool isWindowModel() override { return true; }
     
@@ -264,20 +264,24 @@ public:
     /** Called only before this model is opened by the App on launch */
     virtual void initialise (const String& commandLine);
     
-    /** Create a new window for this model, populated with the argument. */
-    virtual TopLevelWindow* createWindow (UISpec* spec);
+    /**
+     Creates a new window for this model, populated with the supplied UISpec.
+     Be sure to take ownership of the window pointer, or use std::release() to let
+     TopLevelWindowManager take control. Otherwise it will close immediately after going out of scope.
+     */
+    std::unique_ptr<TopLevelWindow> createWindow (UISpec* spec, bool open = true, const Rectangle<int>* frame = nullptr);
     
-    /** Open a window on the default UISpec */
-    virtual TopLevelWindow* open ();
+    /** Open a window on the default UISpec and let TopLevelWindowManager take control of it */
+    void open ();
     
-    /** Open a window on the model, using a specific UISpec */
-    virtual TopLevelWindow* open (UISpec* spec);
+    /** Open a window on the supplied UISpec and let TopLevelWindowManager take control of it */
+    void open (UISpec* spec);
     
-    /** Open a window on the model, using a specific UISpec and window frame */
-    virtual TopLevelWindow* open (UISpec* spec, const Rectangle<int>& frame);
+    /** Open a window on the supplied UISpec in a specific desktop frame and let TopLevelWindowManager take control of it */
+    void open (UISpec* spec, const Rectangle<int>& frame);
     
     /** Programmatically close all windows currently open on this model */
-    virtual void closeAllWindows();
+    void closeAllWindows();
     
     /** Whether a currently open window may be closed */
     virtual bool canCloseWindow() { return true; }
@@ -298,6 +302,11 @@ public:
     
     /** Open a new window on the same model (development builds only) */
     void openClone() override;
+    
+    bool hasOpenWindows();
+    
+private:
+    WeakReference<UIModel> masterWindowModel;
     
 };
     

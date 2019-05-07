@@ -11,6 +11,7 @@
 #include "ans_adaptor_composite.h"
 #include "../core/ans_UIModel.h"
 
+
 namespace ans {
     using namespace juce;
 
@@ -19,7 +20,7 @@ namespace ans {
 #pragma mark UIWindowBase
 #endif
 
-UIWindowBase::UIWindowBase (UIInstance* instance, const WindowSpec& spec) :
+UIWindowBase::UIWindowBase (std::shared_ptr<UIInstance> instance, const WindowSpec& spec) :
     UIAdaptor (instance, spec),
     look (new LookAndFeel_V4())
 {
@@ -33,7 +34,7 @@ UIWindowBase::~UIWindowBase()
 void UIWindowBase::close()
 {
     auto model = dynamic_cast<WindowUIModel*>(getModel());
-    UIInstance::Ptr backup = uiInstance;
+    std::shared_ptr<UIInstance> backup = uiInstance;
     
     delete this;
   
@@ -65,7 +66,7 @@ void UIWindowBase::updateLayoutFromSpec()
 #pragma mark UIDocumentWindow
 #endif
 
-UIDocumentWindow::UIDocumentWindow (UIInstance* instance, const WindowSpec& spec) :
+UIDocumentWindow::UIDocumentWindow (std::shared_ptr<UIInstance> instance, const WindowSpec& spec) :
     DocumentWindow (spec.label,
                     Desktop::getInstance().getDefaultLookAndFeel().findColour (ResizableWindow::backgroundColourId),
                     DocumentWindow::allButtons,
@@ -76,18 +77,12 @@ UIDocumentWindow::UIDocumentWindow (UIInstance* instance, const WindowSpec& spec
     
     setUsingNativeTitleBar (true);
     setResizable (true, false);
-    setLookAndFeel (look);
+    setLookAndFeel (look.get());
 }
 
 UIDocumentWindow::~UIDocumentWindow()
 {
     setLookAndFeel (nullptr);
-    
-    if (auto content = getContentComponent())
-    {
-        setContentNonOwned (nullptr, false);
-        delete content;
-    }
 }
 
 UIComposite* UIDocumentWindow::getUIComposite()

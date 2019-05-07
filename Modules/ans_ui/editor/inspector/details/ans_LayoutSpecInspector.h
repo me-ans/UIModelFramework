@@ -44,11 +44,12 @@ public:
     
     void buildCanvas (UIComposite* canvas)
     {
-        auto content = new CompositeSpec ("content");
-        ScopedPointer<UISpec> ui = new UISpec (*getClass(), content);
         LayoutCursor cursor;
-        populateInspector (content, cursor);
-        populateComposite (canvas, ui);
+        auto content = std::make_unique<CompositeSpec> ("content");
+        populateInspector (content.get(), cursor);
+        
+        auto ui = std::make_unique<UISpec> (*getClass(), std::move(content));
+        populateComposite (canvas, ui.get());
         changed (LayoutSettings);
     }
     

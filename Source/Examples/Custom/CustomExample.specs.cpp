@@ -32,7 +32,7 @@ WeakReference<UISpec> CustomExample::DefaultSpec = new UISpec
         part1->addComponent (swatches);
     }
     {
-        auto user = new UserDefinedSpec ("user", "ColourSelector()", []() { return new ColourSelector(); });
+        auto user = new UserDefinedSpec ("user", "ColourSelector()", []() { return std::make_unique<ColourSelector>(); });
         user->setLayout (LayoutFrame("100% - 200", "50", "100% - 4", "100% - 4"));
         part1->addComponent (user);
     }

@@ -22,10 +22,10 @@ void CustomExample::populateCustomComponent (UIComposite* comp)
         static const Array<Colour> colours =
             { Colours::orange, Colours::brown, Colours::azure, Colours::goldenrod, Colours::forestgreen };
         
-        auto swatch = new UIComposite (comp->getOwner(), String(i));
+        auto swatch = std::make_unique<UIComposite> (comp->getUIInstance(), String(i));
         swatch->setBackgroundColour (colours[i % colours.size()]);
         
-        comp->addComponent (swatch, cursor.nextCells (i % 3 + 1));
+        comp->addComponent (std::move(swatch), cursor.nextCells (i % 3 + 1));
         if (i % 5 == 0)
         {
             cursor.newLine();

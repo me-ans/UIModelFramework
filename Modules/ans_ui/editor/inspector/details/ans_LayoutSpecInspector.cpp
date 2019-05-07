@@ -21,7 +21,7 @@ LayoutSpecInspector::LayoutSpecInspector (ComponentSpecInspector* parent) :
 
 LayoutSpec& LayoutSpecInspector::getLayoutSpec()
 {
-    if (auto spec = mainInspector->getSelectedSpec())
+    if (auto spec = mainInspector->getSelectedComponentSpec())
         return spec->layout;
     
     return dummy;
@@ -29,7 +29,7 @@ LayoutSpec& LayoutSpecInspector::getLayoutSpec()
 
 void LayoutSpecInspector::populateInspector (CompositeSpec* composite, LayoutCursor& cursor)
 {
-    if (mainInspector->getSelectedSpec() == nullptr)
+    if (mainInspector->getSelectedComponentSpec() == nullptr)
         return;
     
     cursor.setCellSize ({0.33, 22});

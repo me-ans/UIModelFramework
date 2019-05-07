@@ -26,23 +26,23 @@ public:
     void setTabSelection (int selection) { selectedTabIndex = selection; }
     
     // Example how to build tabs programmatically that use embedded sub-models
-    // @todo: This should use a dedicated type, not var!
     
-    var getTabPages ()
+    TabPageList::Shared getTabPages ()
     {
-        TabPageList::Ptr tabs = new TabPageList();
-
+        if (tabs != nullptr)
+            return tabs;
+        
+        tabs = std::make_shared<TabPageList>();
+        
         tabs->addPage ("Widgets",
                        "tabWidgets",
                        FROM_SOURCE ([&](UIModel* m){ return &widgetsExample; }),
                        FROM_SOURCE ([&](Model::Class* mc){ return WidgetsExample::DefaultSpec; }));
-
         tabs->addPage ("Canvas Component",
                        "tabCanvas",
                        FROM_SOURCE ([&](UIModel* m){ return &customExample; }),
                        FROM_SOURCE ([&](Model::Class* mc){ return CustomExample::DefaultSpec; }));
-        
-        return tabs.get();
+        return tabs;
     }
     
     void postBuild (UIInstance& instance) override
@@ -54,6 +54,8 @@ public:
     }
     
 private:
+    
+    TabPageList::Shared tabs;
     int selectedTabIndex = 0;
     WidgetsExample widgetsExample;
     CustomExample  customExample;

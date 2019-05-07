@@ -31,6 +31,7 @@ typedef String ComponentID;
 
 class UIModel;
 class UISpec;
+class UIInstance;
 class ComponentSpec;
 class ComponentSpecInspector;
 
@@ -49,6 +50,7 @@ struct LayoutSpec
     typedef enum
     {
         Frame = 0,
+        Grid,
         Flex
     } Type;
     
@@ -67,8 +69,10 @@ struct LayoutSpec
     
     Type type = Type::Frame;
     LayoutFrame frame;
-    juce::FlexItem item;    // Placement in parent FlexBox, if any
-    juce::FlexBox box;      // Placement rules for children, if any
+    juce::Grid grid;
+    juce::GridItem gridItem;
+    juce::FlexBox flexBox;      // Placement rules for children, if any
+    juce::FlexItem flexItem;    // Placement in parent FlexBox, if any
 };
 
 //=====================================================================================================
@@ -140,6 +144,9 @@ public:
     
     virtual ~ComponentSpec() {}
     
+    /** Have this specific subclass of ComponentSpec build a default instance of the Component it represents */
+    virtual std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const;
+    
     /** Render C++ source for the *.specs.cpp file */
     String generateSourceCPP (Model::Class* modelClass) const;
     void   generateSourceCPP (Model::Class* modelClass, SourceOutputStream& source, const ComponentSpec* parent = nullptr) const;
@@ -168,8 +175,19 @@ public:
     /** Set the default aspect for bindings that require one but don't bother (this can be passed to the constructor already) */
     void setAspect (Aspect a) { aspect = a; }
     
+    /** Add a component to the spec as a child and take ownership of it (compatibility mode) */
+    ComponentSpec* addComponent (ComponentSpec* comp)
+    {
+        children.add (comp);
+        return comp;
+    }
+    
     /** Add a component to the spec as a child and take ownership of it */
-    ComponentSpec* addComponent (ComponentSpec* comp) { children.add(comp); return comp; }
+    ComponentSpec* addComponent (std::unique_ptr<ComponentSpec> comp)
+    {
+        children.add (std::move(comp).get());
+        return comp.get();
+    }
 
     /** The spec takes ownership of the Binding */
     void addBinding (Binding* binding);
@@ -252,6 +270,8 @@ public:
         ButtonSpecBase (UIComponentClass::Type::Button, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -268,6 +288,7 @@ public:
         ButtonSpecBase (UIComponentClass::Type::Radio, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 };
 
 //=====================================================================================================
@@ -284,6 +305,7 @@ public:
         ButtonSpecBase (UIComponentClass::Type::Toggle, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
     bool initialState = false;
 };
@@ -326,6 +348,8 @@ public:
         SliderSpecBase (UIComponentClass::Type::Slider, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -341,6 +365,8 @@ public:
     KnobSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         SliderSpecBase (UIComponentClass::Type::Knob, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
 };
 
@@ -358,6 +384,8 @@ public:
         SliderSpecBase (UIComponentClass::Type::Entry, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -374,6 +402,7 @@ public:
         ComponentSpec (UIComponentClass::Type::Label, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
     Font font;
     bool editOnSingleClick = false;
@@ -421,6 +450,7 @@ public:
         enableMultiLine = true;
     }
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
 };
 
@@ -437,7 +467,8 @@ public:
     InputSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         TextSpecBase (UIComponentClass::Type::Input, n, a)
     {}
-    
+
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 };
 
 //=====================================================================================================
@@ -456,6 +487,7 @@ public:
         enableMultiLine = true;
     }
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 };
 
 //=====================================================================================================
@@ -493,6 +525,8 @@ public:
         ComboSpecBase (UIComponentClass::Type::Popup, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -510,6 +544,8 @@ public:
     {
         enableEditing = true;
     }
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
 };
 
@@ -548,6 +584,8 @@ public:
     ListSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         ListSpecBase (UIComponentClass::Type::List, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 };
 
 
@@ -565,6 +603,8 @@ public:
         ListSpecBase (UIComponentClass::Type::Tree, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -581,6 +621,8 @@ public:
         ComponentSpec (UIComponentClass::Type::TableHeader, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -596,6 +638,8 @@ public:
     TableListSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         ComponentSpec (UIComponentClass::Type::TableList, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 };
 
 //=====================================================================================================
@@ -612,6 +656,8 @@ public:
         ComponentSpec (UIComponentClass::Type::Progress, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -627,6 +673,8 @@ public:
     GroupSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         ComponentSpec (UIComponentClass::Type::Group, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
     bool isComposite() override { return true; }
     
@@ -673,6 +721,8 @@ public:
     CompositeSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         CompositeSpecBase (UIComponentClass::Type::Composite, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 };
 
 //=====================================================================================================
@@ -691,6 +741,8 @@ public:
         CompositeSpecBase (UIComponentClass::Type::Canvas, n)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
     void generateSourceProperties (Model::Class* modelClass, SourceOutputStream& out) const override;
     
     int customType = 0;
@@ -704,7 +756,7 @@ public:
 class UserDefinedSpec : public ComponentSpec
 {
 public:
-    typedef std::function<Component*()> ConstructorFunct;
+    typedef std::function<std::unique_ptr<Component>()> ConstructorFunct;
     
     METACLASS_BEGIN (UserDefinedSpec, ComponentSpec)
     METACLASS_END
@@ -715,6 +767,8 @@ public:
         constructionSource (source),
         constructionFunct (fun)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
     void generateSourceCreation (Model::Class* modelClass, SourceOutputStream& out) const override;
     
@@ -740,6 +794,8 @@ public:
         ComponentSpec (UIComponentClass::Type::Concertina, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -755,6 +811,8 @@ public:
     MenuBarSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         ComponentSpec (UIComponentClass::Type::MenuBar, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
 };
 
@@ -772,6 +830,8 @@ public:
         ComponentSpec (UIComponentClass::Type::ToolBar, n, a)
     {}
     
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
+    
 };
 
 //=====================================================================================================
@@ -787,6 +847,8 @@ public:
     ImageSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         ComponentSpec (UIComponentClass::Type::Image, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
 };
 
@@ -804,6 +866,8 @@ public:
     ImagePreviewSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         ComponentSpec (UIComponentClass::Type::ImagePreview, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
 
 };
 
@@ -821,6 +885,8 @@ public:
     METACLASS_END
     
     WindowSpec (const ComponentID& n = "window", UIComponentClass::Type t = UIComponentClass::Type::Window);
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
     void generateSourceCreation   (Model::Class* modelClass, SourceOutputStream& out) const override;
     void generateSourceProperties (Model::Class* modelClass, SourceOutputStream& out) const override;

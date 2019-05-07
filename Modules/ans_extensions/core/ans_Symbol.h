@@ -118,10 +118,10 @@ private:
  Symbols are registered in a global SymbolTable. They basically behave like integers with
  an associated name that can be looked up for printing and parsing.
  
- Using Symbols as global variables, you practically have a project-wide global enum
- that manages the mapping of names to unique integers (and vice versa) automatically.
- These variables look and feel like constants in your source code, behave like integers
- and greatly improve readability and maintainability.
+ Symbols used as global variables basically are a project-wide global enum that manages
+ the mapping of names to unique integers (and vice versa) automatically. These variables
+ look and feel like constants in your source code, behave like integers and greatly improve
+ readability and maintainability.
  
  Symbol has a few benefits over juce::Identifier: Symbols behave like integers, making
  them more efficient for use in Array, SortedSet, HashMap, etc. Symbols pre-hash their

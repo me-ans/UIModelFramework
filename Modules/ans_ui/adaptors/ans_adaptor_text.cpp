@@ -19,13 +19,13 @@ namespace ans {
 #pragma mark UITextEditor
 #endif
 
-UITextEditor::UITextEditor (UIInstance* owner, const TextSpecBase& spec) :
+UITextEditor::UITextEditor (std::shared_ptr<UIInstance> instance, const TextSpecBase& spec) :
     TextEditor (spec.identifier),
-    UIAdaptor (owner, spec),
+    UIAdaptor (instance, spec),
     acceptKeyStrokes (false),
     hasChanged (false)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     
     if (spec.type == UIComponentClass::Type::Text)
     {
@@ -116,16 +116,16 @@ void UITextEditor::focusGained (FocusChangeType cause)
 #pragma mark UICodeEditor
 #endif
 
-UICodeEditor::UICodeEditor (UIInstance* owner, const TextSpecBase& spec) :
+UICodeEditor::UICodeEditor (std::shared_ptr<UIInstance> instance, const TextSpecBase& spec) :
     Component (spec.identifier),
-    UIAdaptor (owner, spec),
+    UIAdaptor (instance, spec),
     document (),
     tokeniser ()
 {
-    initialiseFromSpec (owner, spec);
-    editor = new CodeEditorComponent (document, &tokeniser);
+    initialiseFromSpec (instance, spec);
+    editor = std::make_unique<CodeEditorComponent> (document, &tokeniser);
     editor->setPositioner (new FramePositioner (*editor, LayoutFrame::entire()));
-    addAndMakeVisible (editor);
+    addAndMakeVisible (editor.get());
     
     lookAndFeel.setColourScheme (LookAndFeel_V4::getLightColourScheme());
     editor->setLookAndFeel(&lookAndFeel);

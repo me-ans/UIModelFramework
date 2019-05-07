@@ -16,16 +16,15 @@ namespace ans {
     using namespace juce;
     
 /**
- UIBuilder does the heavy lifting of constructing a Component hierarchy from a UISpec. UIBuilder
- actually does what ComponentSpec is expected to do by itself, if this was really object-oriented.
- Due to circular header dependencies though, this construction work could not (yet) be moved to
- ComponentSpec and its subclasses.
+ UIBuilder does the heavy lifting of constructing a Component hierarchy from a UISpec and registering
+ UIAdaptors with the associated UIModel. UIBuilder actually does what ComponentSpec is expected to do
+ by itself, if this was really object-oriented. Due to circular header dependencies though, this
+ construction work could not (yet) be moved to ComponentSpec and its subclasses.
  */
-
 struct UIBuilder
 {
     /** Build a new window according to UISpec */
-    static TopLevelWindow* buildWindow (UISpec* spec, WindowUIModel* model);
+    static std::unique_ptr<TopLevelWindow> buildWindow (UISpec* spec, WindowUIModel* model);
     
     /**
      Build the component hierarchy defined by the UISpec and install it into the composite,
@@ -39,21 +38,24 @@ struct UIBuilder
      and install them into the composite, replacing its current contents. The resulting adaptors/components
      will be bound to the UIModel, which should be a UIEditor.
      */
-    static bool buildProxyInto (UISpec* spec, UIModel* model, UIComposite* composite, UIInstance* mockups);
+    static bool buildProxyInto (UISpec* spec, UIModel* model, UIComposite* composite, std::shared_ptr<UIInstance> mockups);
     
 
-    static Component* buildComponent         (const ComponentSpec* spec, UIInstance* instance, Component* parent);
-    static Component* buildComponentInstance (const ComponentSpec* spec, UIInstance* instance, Component* parent);
+    static std::unique_ptr<Component> buildComponent (const ComponentSpec* spec,
+                                                      std::shared_ptr<UIInstance> instance,
+                                                      Component* parent);
     
     /** Build a UIComponentProxy for UIEditor the given spec */
-    static Component* buildProxy         (const ComponentSpec* spec, UIInstance* instance, Component* parent, UIInstance* mockups);
-    static Component* buildProxyInstance (const ComponentSpec* spec, UIInstance* instance, Component* parent, UIInstance* mockups);
+    static std::unique_ptr<Component> buildProxy (const ComponentSpec* spec,
+                                                  std::shared_ptr<UIInstance> instance,
+                                                  Component* parent,
+                                                  std::shared_ptr<UIInstance> mockups);
     
     /** Build an empty canvas, that is, clear it of all content */
     static bool buildEmptyCanvas (UIComposite* composite);
     
     /** Adds the 'edit' link to UIs (development builds only) */
-    static void buildEditLink (UIInstance* instance, UIComposite* composite);
+    static void buildEditLink (std::shared_ptr<UIInstance> instance, UIComposite* composite);
 
 };
 
@@ -70,9 +72,9 @@ class UIComponentProxy :
         public UIAdaptor
 {
 public:
-    UIComponentProxy (UIInstance* owner, const ComponentSpec& spec, UIInstance* mockups);
+    UIComponentProxy (std::shared_ptr<UIInstance> instance, const ComponentSpec& spec, std::shared_ptr<UIInstance> mockups);
    ~UIComponentProxy ();
-    
+        
     void setComponentState (const Binding::Purpose& p, Selection& selection) override;
     
     void resized() override;
@@ -87,8 +89,8 @@ private:
     void updateDummy();
     
     ComponentSpec* editedSpec;
-    ScopedPointer<Component> dummy;
-    UIInstance::Ptr mockupUI;
+    std::unique_ptr<Component> dummy;
+    std::shared_ptr<UIInstance> mockupUI;
     bool selected;
 };
     

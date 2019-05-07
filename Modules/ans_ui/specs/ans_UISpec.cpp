@@ -29,14 +29,14 @@ UISpec::UISpec (Model::Class& modelClassRef, const String& specName_, SpecLambda
     mc->addSpec (this);
 }
 
-UISpec::UISpec (Model::Class& modelClassRef, ComponentSpec* content) :
+UISpec::UISpec (Model::Class& modelClassRef, std::unique_ptr<ComponentSpec> content) :
     modelClass (&modelClassRef),
     specName ("Temporary"),
     specLambda ([](){ return nullptr; }),
     defaultSpec (false)
 {
     // Temp specs are NOT registered globally
-    rootSpec.reset (content);
+    rootSpec = std::move(content);
 }
 
 UISpec::~UISpec ()
@@ -49,27 +49,28 @@ void UISpec::flush ()
     rootSpec = nullptr;
 }
 
-ComponentSpec* UISpec::getRootSpec ()
+ComponentSpec* UISpec::getRootComponentSpec ()
 {
     if (rootSpec == nullptr)
         rootSpec = createSpec();
 
-    return rootSpec;
+    return rootSpec.get();
 }
 
-ComponentSpec* UISpec::createSpec ()
+std::unique_ptr<ComponentSpec> UISpec::createSpec ()
 {
     if (specLambda != nullptr)
     {
         DBG ("Creating " << getModelClass()->getName() << "::" << getName());
-        return specLambda();
+        // @todo: specLambda still uses new() and raw pointers
+        return std::unique_ptr<ComponentSpec> (specLambda());
     }
     return nullptr;
 }
 
 Aspects UISpec::getUsedAspects ()
 {
-    if (auto spec = getRootSpec())
+    if (auto spec = getRootComponentSpec())
         return spec->getUsedAspects();
     else
         return Aspects();
@@ -78,7 +79,7 @@ Aspects UISpec::getUsedAspects ()
 
 ComponentSpec*  UISpec::getComponentSpec (const ComponentID& identifier)
 {
-    return findComponentSpec (identifier, getRootSpec());
+    return findComponentSpec (identifier, getRootComponentSpec());
 }
 
 const ComponentID  UISpec::getUniqueComponentID (const ComponentID& identifier, ComponentSpec* exclude)
@@ -86,7 +87,7 @@ const ComponentID  UISpec::getUniqueComponentID (const ComponentID& identifier, 
     ComponentID id = identifier;
     int iter = 0;
     
-    while (auto found = findComponentSpec (id, getRootSpec(), exclude))
+    while (auto found = findComponentSpec (id, getRootComponentSpec(), exclude))
     {
         id = id.removeCharacters ("0123456789") + String(++iter);
     }
@@ -103,7 +104,7 @@ ComponentSpec* UISpec::findComponentSpec (const ComponentID& identifier, Compone
     
     for (auto child : current->children)
         if (auto found = findComponentSpec (identifier, child))
-            return child;
+            return found;
     
     return nullptr;
 }
@@ -130,7 +131,7 @@ WeakReference<UISpec> $MODEL::$NAME = new UISpec
     out << form.replace ("$MODEL", modelClass->getName())
                .replace ("$NAME", getName())
                .replace ("$DEFAULT", (isDefault() ? ",\ntrue" : "" ))
-               .replace ("$SPEC", getRootSpec()->generateSourceCPP (modelClass));
+               .replace ("$SPEC", getRootComponentSpec()->generateSourceCPP (modelClass));
     out << "\n\n";
     return out;
 }

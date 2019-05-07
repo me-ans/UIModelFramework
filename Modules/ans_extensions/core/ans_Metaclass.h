@@ -12,10 +12,13 @@ namespace ans
     using namespace juce;
     
 /**
- Metaclass adds support for "static virtual" methods and basic reflection on the class hierarchy.
- The Metaclass hierarchy is limited to single-inheritance. That is, each Metaclass can have only
- one superclass, which is however sufficient to map an inheritance path of most domain-specific
- classes.
+ Metaclass adds support for 'static virtual methods' and basic reflection on the class hierarchy.
+ Properly used class-side inheritance helps with the organization and maintenance of large
+ domain-specific class hierarchies. The Metaclass hierarchy is limited to single-inheritance.
+ That is, each Metaclass can have only one superclass, which is however sufficiently expressive
+ for most applications.
+ 
+ @todo: getClass() should return a reference, as should all uses of persistently static relationships
  */
 
 class Metaclass

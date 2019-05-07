@@ -18,12 +18,12 @@ namespace ans {
 #pragma mark UIListBox
 #endif
 
-UIListBox::UIListBox (UIInstance* owner, const ListSpec& spec) :
+UIListBox::UIListBox (std::shared_ptr<UIInstance> instance, const ListSpec& spec) :
     ListBox (spec.identifier),
-    UIAdaptor (owner, spec),
+    UIAdaptor (instance, spec),
     listModel (nullptr)
 {
-    initialiseFromSpec (owner, spec);
+    initialiseFromSpec (instance, spec);
     ListBox::setMultipleSelectionEnabled (spec.enableMultipleSelection);
     ListBox::setModel (nullptr);
 }

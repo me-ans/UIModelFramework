@@ -53,15 +53,12 @@ struct TabPageSpec
 };
 
 /**
- TabPageList extends Array<TabPageSpec> with convenience methods for adding pages.
- It is also used by UIModel to supply a tabs composite with data.
+ TabPageList is used by UIModel to supply a tabbed composite with pages.
  */
 
-struct TabPageList :
-    public Array<TabPageSpec>,
-    public ReferenceCountedObject
+struct TabPageList : public Array<TabPageSpec>
 {
-    typedef ReferenceCountedObjectPtr<TabPageList> Ptr;
+    using Shared = std::shared_ptr<TabPageList>;
     
     void addPage (const TabPageSpec& page);
     void addPage (WeakReference<UISpec>& uiSpec, const TabPageSpec::GetModelExpression& modelGetter);
@@ -90,6 +87,8 @@ struct TabsSpec : public CompositeSpecBase
     TabsSpec (const ComponentID& n, Aspect a = Model::Undefined) :
         CompositeSpecBase (UIComponentClass::Type::Tabs, n, a)
     {}
+    
+    std::unique_ptr<Component> buildInstance (std::shared_ptr<UIInstance> instance) const override;
     
     void setOrientation (TabbedButtonBar::Orientation o) { orientation = o; }
     

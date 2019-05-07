@@ -25,12 +25,12 @@ class UIProgressBar :
         public UIAdaptor
 {
 public:
-    UIProgressBar (UIInstance* owner, const ProgressSpec& spec) :
+    UIProgressBar (std::shared_ptr<UIInstance> instance, const ProgressSpec& spec) :
         ProgressBar (progress),
-        UIAdaptor (owner, spec),
+        UIAdaptor (instance, spec),
         progress (0.0)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
         
         if (!spec.label.isEmpty())
             setTextToDisplay (spec.label);       
@@ -53,11 +53,11 @@ class UIButton :
         public UIAdaptor
 {
 public:
-    UIButton (UIInstance* owner, const ButtonSpecBase& spec) :
+    UIButton (std::shared_ptr<UIInstance> instance, const ButtonSpecBase& spec) :
         ButtonClass (spec.identifier),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
         if (!spec.label.isEmpty())
             ButtonClass::setButtonText (spec.label);
     }
@@ -111,7 +111,7 @@ class UIRadioButton :
         public UIAdaptor
 {
 public:
-    UIRadioButton (UIInstance* owner, const RadioSpec& spec);
+    UIRadioButton (std::shared_ptr<UIInstance> instance, const RadioSpec& spec);
     
     void setComponentState (const Binding::Purpose& p, const String& value) override
     {
@@ -206,11 +206,11 @@ class UITableHeader :
         public UIAdaptor
 {
 public:
-    UITableHeader (UIInstance* owner, const TableHeaderSpec& spec) :
+    UITableHeader (std::shared_ptr<UIInstance> instance, const TableHeaderSpec& spec) :
         TableHeaderComponent (),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
 };
 
@@ -224,11 +224,11 @@ class UITableList :
         public UIAdaptor
 {
 public:
-    UITableList (UIInstance* owner, const TableListSpec& spec) :
+    UITableList (std::shared_ptr<UIInstance> instance, const TableListSpec& spec) :
         TableListBox (spec.identifier),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
     
 };
@@ -244,7 +244,7 @@ class UISlider :
         public juce::Slider::Listener
 {
 public:
-    UISlider (UIInstance* owner, const SliderSpecBase& spec);
+    UISlider (std::shared_ptr<UIInstance> instance, const SliderSpecBase& spec);
    ~UISlider ();
     
     void sliderValueChanged (Slider* slider) override   { performBinding (Binding::Purpose::SetValue); }
@@ -263,22 +263,21 @@ class UIGroup :
         public UIAdaptor
 {
 public:
-    UIGroup (UIInstance* owner, const GroupSpec& spec) :
+    UIGroup (std::shared_ptr<UIInstance> instance, const GroupSpec& spec) :
         GroupComponent (spec.identifier),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
         setText (spec.label);
     }
     
-    ~UIGroup () { deleteAllChildren(); }
+    ~UIGroup () {}
     
     void setComponentState (const Binding::Purpose& p, const String& value) override
     {
         if (p == Binding::Purpose::GetLabel)
             return setText (value);
     }
-    
 };
 
 
@@ -290,11 +289,11 @@ class UILabel :
         public UIAdaptor
 {
 public:
-    UILabel (UIInstance* owner, const LabelSpec& spec) :
+    UILabel (std::shared_ptr<UIInstance> instance, const LabelSpec& spec) :
         Label (spec.identifier),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
         if (!spec.label.isEmpty())
             setText (spec.label, dontSendNotification);
     }
@@ -315,7 +314,7 @@ class UIComboBox :
         public UIAdaptor
 {
 public:
-    UIComboBox (UIInstance* owner, const ComboSpecBase& spec);
+    UIComboBox (std::shared_ptr<UIInstance> instance, const ComboSpecBase& spec);
    ~UIComboBox ();
     
     void getComponentState (const Binding::Purpose& p, String& value) override;
@@ -339,11 +338,11 @@ class UIConcertina :
         public UIAdaptor
 {
 public:
-    UIConcertina (UIInstance* owner, const ConcertinaSpec& spec) :
+    UIConcertina (std::shared_ptr<UIInstance> instance, const ConcertinaSpec& spec) :
         ConcertinaPanel (),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
     
 };
@@ -358,11 +357,11 @@ class UIToolBar :
         public UIAdaptor
 {
 public:
-    UIToolBar (UIInstance* owner, const ToolBarSpec& spec) :
+    UIToolBar (std::shared_ptr<UIInstance> instance, const ToolBarSpec& spec) :
         Toolbar (),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
     
 };
@@ -377,11 +376,11 @@ class UIMenuBar :
         public UIAdaptor
 {
 public:
-    UIMenuBar (UIInstance* owner, const MenuBarSpec& spec) :
+    UIMenuBar (std::shared_ptr<UIInstance> instance, const MenuBarSpec& spec) :
         MenuBarComponent (),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
     
 };
@@ -396,11 +395,11 @@ class UIImage :
         public UIAdaptor
 {
 public:
-    UIImage (UIInstance* owner, const ImageSpec& spec) :
+    UIImage (std::shared_ptr<UIInstance> instance, const ImageSpec& spec) :
         ImageComponent (spec.identifier),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
     
 };
@@ -416,11 +415,11 @@ class UIImagePreview :
         public UIAdaptor
 {
 public:
-    UIImagePreview (UIInstance* owner, const ImagePreviewSpec& spec) :
+    UIImagePreview (std::shared_ptr<UIInstance> instance, const ImagePreviewSpec& spec) :
         ImagePreviewComponent (),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-        initialiseFromSpec (owner, spec);
+        initialiseFromSpec (instance, spec);
     }
     
 };
@@ -428,6 +427,8 @@ public:
 
 /**
  UIUserDefinedComponent acts as a proxy for an arbitrary component supplied by user code.
+ That custom component is responsibe for taking ownership of all its children and delete
+ those when it gets deleted!
 
  @todo: Currently this is a shell that holds the user component as its sole child. This
  offers the opportunity to use UIAdaptor for dynamic labeling, layout, etc. whatever
@@ -438,20 +439,17 @@ class UIUserDefinedComponent :
         public UIAdaptor
 {
 public:
-    UIUserDefinedComponent (UIInstance* owner, const UserDefinedSpec& spec) :
+    UIUserDefinedComponent (std::shared_ptr<UIInstance> instance, const UserDefinedSpec& spec) :
         Component (spec.identifier),
-        UIAdaptor (owner, spec)
+        UIAdaptor (instance, spec)
     {
-       initialiseFromSpec (owner, spec);
+       initialiseFromSpec (instance, spec);
         
         if (auto comp = spec.constructionFunct())
-        {
-            comp->setPositioner (new FramePositioner (*comp, LayoutFrame::entire()));
-            addAndMakeVisible (comp);
-        }
+            addComponent (std::move(comp), LayoutFrame::entire());
     }
     
-    ~UIUserDefinedComponent () { deleteAllChildren(); }
+    ~UIUserDefinedComponent () {}
 
 };
 

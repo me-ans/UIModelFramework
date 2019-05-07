@@ -17,19 +17,24 @@ namespace ans {
     using namespace juce;
     
 /**
- UITabComposite resembles TabbedComponent to some extent, albeit with support
- for communication with UIModel. 
+ UITabComposite resembles TabbedComponent to some extent, adding full support for
+ communication with UIModel. Instead of supplying tab pages at build time already,
+ which has several disadvantages, this class supports dynamically adding any UISpec
+ of any UIModel as a tab page.
+ 
+ @todo: The getters/setters used for UIModel/UISpec access are somewhat awkward ...
  */
+    
 class UITabComposite :
         public UIComposite,
         public ChangeListener
 {
 public:
         
-    UITabComposite (UIInstance* owner, const TabsSpec& spec);
+    UITabComposite (std::shared_ptr<UIInstance> instance, const TabsSpec& spec);
    ~UITabComposite ();
     
-    UIComposite* getUIComposite() override { return tabContents; };
+    UIComposite* getUIComposite() override { return tabContentsRef; };
     
     void deleteContents() override;
     
@@ -47,7 +52,9 @@ public:
                   TabPageSpec::GetModelExpression modelGetter,
                   TabPageSpec::GetSpecExpression specGetter);
     
+    std::shared_ptr<TabPageList> getPages();
     
+    void setComponentState (const Binding::Purpose& p, std::shared_ptr<TabPageList> contents) override;
     void getComponentState (const Binding::Purpose& p, var& value) override;
     void setComponentState (const Binding::Purpose& p, const var& value) override;
     
@@ -56,7 +63,7 @@ public:
 private:
     void populateContents (int index);
     
-    TabPageList pages;
+    std::shared_ptr<TabPageList> pages;
     int defaultIndex;
     ComponentID defaultID;
     std::function<void()> notificationPre;
@@ -64,8 +71,8 @@ private:
     std::function<void()> confirmation;
     bool inhibit;
     int  currentPopulatedIndex;
-    TabbedButtonBar* tabBar;  // merely a reference to a mandatory child of this UIComposite
-    UIComposite* tabContents; // merely a reference to a mandatory child of this UIComposite
+    TabbedButtonBar* tabBarRef;
+    UIComposite* tabContentsRef;
 };
 
 }
