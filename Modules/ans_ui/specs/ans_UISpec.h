@@ -31,10 +31,10 @@ public:
     typedef std::function<ComponentSpec*()> SpecLambda;
     
     /** Constructor for global UISpec, as used in generated *.specs.cpp files */
-    UISpec (Model::Class& modelClassRef, const String& specName_, SpecLambda contentCreator, bool beDefault = false);
+    UISpec (Model::Class* modelClassRef, const String& specName_, SpecLambda contentCreator, bool beDefault = false);
     
     /** Constructor for temporary specs for programmatical use (takes ownership of content) */
-    UISpec (Model::Class& modelClassRef, std::unique_ptr<ComponentSpec> content);
+    UISpec (Model::Class* modelClassRef, std::unique_ptr<ComponentSpec> content);
     
    ~UISpec ();
     

@@ -57,7 +57,7 @@ namespace ans {
         void setMainTabSelection (int value) { selectedMainTabIndex = value; }
         
         const String getSpecName ()  { return getSelectedUISpec()->getName(); }
-        const String getModelName () { return getSelectedUIModelClass()->instance().getName(); }
+        const String getModelName () { return getSelectedUIModelClass()->getName(); }
         bool  getEditingEnabled ()   { return getSelectedUIModelClass()->isEditable(); }
         
         // Model Tree
@@ -94,7 +94,7 @@ namespace ans {
             if (index >= 0)
             {
                 aspectListEditBuffer.set (aspectList.getSelectedIndex(), name);
-                getSelectedUIModelClass()->instance().setAspectNames (aspectListEditBuffer);
+                getSelectedUIModelClass()->setAspectNames (aspectListEditBuffer);
                 changed (ModelSettings);
             }
         }
@@ -103,7 +103,7 @@ namespace ans {
         {
             aspectListEditBuffer.insert (aspectList.getSelectedIndex(), "NewAspect");
             aspectList.setListReference (aspectListEditBuffer);
-            getSelectedUIModelClass()->instance().setAspectNames (aspectListEditBuffer);
+            getSelectedUIModelClass()->setAspectNames (aspectListEditBuffer);
             changed ({ModelAspects, ModelSettings});
         }
         
@@ -113,7 +113,7 @@ namespace ans {
             if (index >= 0)
             {
                 aspectListEditBuffer.remove (index);
-                getSelectedUIModelClass()->instance().setAspectNames (aspectListEditBuffer);
+                getSelectedUIModelClass()->setAspectNames (aspectListEditBuffer);
                 aspectList.setListReference (aspectListEditBuffer);
                 aspectList.setSelectedIndex (jmax (0, index - 1));
                 changed ({ModelAspects, ModelSettings});

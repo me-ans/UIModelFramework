@@ -18,8 +18,8 @@ namespace ans {
 #pragma mark UISpec
 #endif
 
-UISpec::UISpec (Model::Class& modelClassRef, const String& specName_, SpecLambda contentCreator, bool beDefault) :
-    modelClass (&modelClassRef),
+UISpec::UISpec (Model::Class* modelClassRef, const String& specName_, SpecLambda contentCreator, bool beDefault) :
+    modelClass (modelClassRef),
     specName (specName_),
     specLambda (contentCreator),
     defaultSpec (beDefault)
@@ -29,8 +29,8 @@ UISpec::UISpec (Model::Class& modelClassRef, const String& specName_, SpecLambda
     mc->addSpec (this);
 }
 
-UISpec::UISpec (Model::Class& modelClassRef, std::unique_ptr<ComponentSpec> content) :
-    modelClass (&modelClassRef),
+UISpec::UISpec (Model::Class* modelClassRef, std::unique_ptr<ComponentSpec> content) :
+    modelClass (modelClassRef),
     specName ("Temporary"),
     specLambda ([](){ return nullptr; }),
     defaultSpec (false)
@@ -119,7 +119,7 @@ String UISpec::generateSourceCPP (Model::Class* modelClass)
     static const String form = R"HERE(
 WeakReference<UISpec> $MODEL::$NAME = new UISpec
 (
- $MODEL::Class::instance(),
+ $MODEL::getMetaClass(),
  "$NAME",
  []()
  {$SPEC}$DEFAULT

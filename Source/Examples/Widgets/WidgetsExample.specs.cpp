@@ -20,7 +20,7 @@ INIT_SYMBOL (WidgetsExample, TabSelection);
 
 WeakReference<UISpec> WidgetsExample::DefaultSpec = new UISpec
 (
- WidgetsExample::Class::instance(),
+ WidgetsExample::getMetaClass(),
  "DefaultSpec",
  []()
  {

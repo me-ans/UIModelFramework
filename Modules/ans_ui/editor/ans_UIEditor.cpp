@@ -22,8 +22,8 @@ JUCE_IMPLEMENT_SINGLETON (UIEditor)
         aspectList (false, true),
         specList (false, true)
     {
-        modelTree.setRoot (&UIModel::Class::instance());
-        modelTree.setSingleSelection (&UIModel::Class::instance());
+        modelTree.setRoot (UIModel::getMetaClass());
+        modelTree.setSingleSelection (UIModel::getMetaClass());
         
         if (modelTree.getSelection().isEmpty())
             modelTree.setSingleSelection (getUIModelClasses().getFirst());
@@ -59,7 +59,7 @@ JUCE_IMPLEMENT_SINGLETON (UIEditor)
     Array<UIModel::Class*> UIEditor::getUIModelClasses ()
     {
         Array<UIModel::Class*> classes;
-        UIModel::Class::instance().withAllSubClassesDo<UIModel::Class>
+        UIModel::getMetaClass()->withAllSubClassesDo<UIModel::Class>
             ([&](auto child) { classes.add (child); });
         return classes;
     }
@@ -67,7 +67,7 @@ JUCE_IMPLEMENT_SINGLETON (UIEditor)
     Array<ComponentSpec::Class*> UIEditor::getComponentSpecClasses ()
     {
         Array<ComponentSpec::Class*> classes;
-        ComponentSpec::Class::instance().withAllSubClassesDo<ComponentSpec::Class>
+        ComponentSpec::getMetaClass()->withAllSubClassesDo<ComponentSpec::Class>
             ([&](auto child) { classes.add (child); });
         return classes;
     }

@@ -28,7 +28,7 @@ INIT_SYMBOL (UIEditor, LayoutCanvas);
 
 WeakReference<UISpec> UIEditor::MainWindowSpec = new UISpec
 (
- UIEditor::Class::instance(),
+ UIEditor::getMetaClass(),
  "MainWindowSpec",
  []()
  {
@@ -62,7 +62,7 @@ true
 
 WeakReference<UISpec> UIEditor::TabSpecModel = new UISpec
 (
- UIEditor::Class::instance(),
+ UIEditor::getMetaClass(),
  "TabSpecModel",
  []()
  {
@@ -148,7 +148,7 @@ WeakReference<UISpec> UIEditor::TabSpecModel = new UISpec
 
 WeakReference<UISpec> UIEditor::TabSpecLayout = new UISpec
 (
- UIEditor::Class::instance(),
+ UIEditor::getMetaClass(),
  "TabSpecLayout",
  []()
  {
@@ -197,7 +197,7 @@ WeakReference<UISpec> UIEditor::TabSpecLayout = new UISpec
 
 WeakReference<UISpec> UIEditor::TabSpecGraphics = new UISpec
 (
- UIEditor::Class::instance(),
+ UIEditor::getMetaClass(),
  "TabSpecGraphics",
  []()
  {
@@ -218,7 +218,7 @@ WeakReference<UISpec> UIEditor::TabSpecGraphics = new UISpec
 
 WeakReference<UISpec> UIEditor::TabSpecResources = new UISpec
 (
- UIEditor::Class::instance(),
+ UIEditor::getMetaClass(),
  "TabSpecResources",
  []()
  {
@@ -239,7 +239,7 @@ WeakReference<UISpec> UIEditor::TabSpecResources = new UISpec
 
 WeakReference<UISpec> UIEditor::TabSpecCode = new UISpec
 (
- UIEditor::Class::instance(),
+ UIEditor::getMetaClass(),
  "TabSpecCode",
  []()
  {

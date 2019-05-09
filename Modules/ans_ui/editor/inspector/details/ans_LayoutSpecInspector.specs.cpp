@@ -17,7 +17,7 @@ INIT_SYMBOL (LayoutSpecInspector, LayoutSettings);
 
 WeakReference<UISpec> LayoutSpecInspector::DefaultSpec = new UISpec
 (
- LayoutSpecInspector::Class::instance(),
+ LayoutSpecInspector::getMetaClass(),
 "DefaultSpec",
 []()
 {

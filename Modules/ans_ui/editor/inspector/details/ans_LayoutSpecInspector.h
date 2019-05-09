@@ -48,7 +48,7 @@ public:
         auto content = std::make_unique<CompositeSpec> ("content");
         populateInspector (content.get(), cursor);
         
-        auto ui = std::make_unique<UISpec> (*getClass(), std::move(content));
+        auto ui = std::make_unique<UISpec> (getClass(), std::move(content));
         populateComposite (canvas, ui.get());
         changed (LayoutSettings);
     }

@@ -80,7 +80,7 @@ void Model::changed (const Array<Aspect>& aspects)
 void Model::changed (Aspect aspect, void* parameter)
 {
 #if ANS_DEBUG_UPDATES
-    DBG (CLASSNAME << " changed (" << printAspect(aspect) << ")");
+    DBG (getClass()->getName() << " changed (" << Symbol(aspect).toString() << ")");
 #endif
     if (dependents.size() > 0)
         callDependents (aspect, parameter);
@@ -89,7 +89,7 @@ void Model::changed (Aspect aspect, void* parameter)
 void Model::changedAspects (const Aspects& aspects)
 {
 #if ANS_DEBUG_UPDATES
-    DBG (CLASSNAME << " changed (" << aspects.toString() << ")");
+    DBG (getClass()->getName() << " changed (" << aspects.toString() << ")");
 #endif
     for (auto a : aspects.contents)
         changed(a);

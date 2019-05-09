@@ -96,6 +96,7 @@ private:
 /** Ends definition of the top-most Metaclass */
 #define METACLASS_ROOT_END \
     }; \
+    static  Class* getMetaClass()   { return &Class::instance(); } \
     virtual Class* getClass() const { return &Class::instance(); }
 
 /**
@@ -126,5 +127,6 @@ private:
 /** Ends the definition of a derived Metaclass */
 #define METACLASS_END \
     }; \
+    static  Class* getMetaClass()    { return &Class::instance(); } \
     Class* getClass() const override { return &Class::instance(); }
 

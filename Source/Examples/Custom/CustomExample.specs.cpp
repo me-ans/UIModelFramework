@@ -14,7 +14,7 @@ INIT_SYMBOL (CustomExample, Colours);
 
 WeakReference<UISpec> CustomExample::DefaultSpec = new UISpec
 (
- CustomExample::Class::instance(),
+ CustomExample::getMetaClass(),
  "DefaultSpec",
  []()
  {

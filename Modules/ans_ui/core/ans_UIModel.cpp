@@ -28,7 +28,7 @@ namespace ans
 
     WeakReference<UISpec> UIModel::DefaultSpec = new UISpec
     (
-     UIModel::Class::instance(),
+     UIModel::getMetaClass(),
      "DefaultSpec",
      []()
      {
@@ -235,7 +235,7 @@ namespace ans
     
     const String UIModel::Class::getTemplate (const String& name)
     {
-        File file = UIModel::Class::instance().getSpecsFile().getParentDirectory().getChildFile("templates").getChildFile(name);
+        File file = UIModel::getMetaClass()->getSpecsFile().getParentDirectory().getChildFile("templates").getChildFile(name);
         if (!file.existsAsFile())
         {
             // If you get an assertion here, you'll need to include preprocessor macro PROJECT_DIR

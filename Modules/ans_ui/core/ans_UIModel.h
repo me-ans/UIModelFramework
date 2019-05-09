@@ -198,11 +198,11 @@ public:
     
     Array<Aspect> getAspects() const override { return {}; }
     
-    bool isEditable() override { return this != &EmbeddedUIModel::Class::instance(); }
+    bool isEditable() override { return this != EmbeddedUIModel::getMetaClass(); }
     
     const String getNameSpace() override
     {
-        return (this == &EmbeddedUIModel::Class::instance())
+        return (this == EmbeddedUIModel::getMetaClass())
             ? Super::getNameSpace()
             : "";
     }
@@ -241,11 +241,11 @@ public:
 
     Array<Aspect> getAspects() const override { return {}; }
     
-    bool isEditable() override { return this != &WindowUIModel::Class::instance(); }
+    bool isEditable() override { return this != WindowUIModel::getMetaClass(); }
     
     const String getNameSpace() override
     {
-        return (this == &WindowUIModel::Class::instance())
+        return (this == WindowUIModel::getMetaClass())
             ? Super::Class::getNameSpace()
             : "";
     }

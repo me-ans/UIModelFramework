@@ -19,7 +19,7 @@ INIT_SYMBOL (ComponentSpecInspector, ComponentLayout);
 
 WeakReference<UISpec> ComponentSpecInspector::DefaultSpec = new UISpec
 (
- ComponentSpecInspector::Class::instance(),
+ ComponentSpecInspector::getMetaClass(),
  "DefaultSpec",
  []()
  {

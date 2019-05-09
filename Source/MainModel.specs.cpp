@@ -18,7 +18,7 @@ INIT_SYMBOL (MainModel, TabSelection);
 
 WeakReference<UISpec> MainModel::MainWindowSpec = new UISpec
 (
- MainModel::Class::instance(),
+ MainModel::getMetaClass(),
  "MainWindowSpec",
  []()
  {
