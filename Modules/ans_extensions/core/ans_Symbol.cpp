@@ -136,12 +136,6 @@ Symbol::Symbol (const Symbol& other)
     SymbolTable::instance().incrementReferences(unique);
 }
 
-Symbol::Symbol (Symbol&& other) 
-{
-    unique = other.unique;
-    SymbolTable::instance().incrementReferences(unique);
-}
-
 Symbol::Symbol (const String& nm)
 {
     // A Symbol cannot be created from an empty string!

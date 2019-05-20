@@ -146,25 +146,22 @@ public:
     
     /** Restores a Symbol from is unique ID. Obviously, this fails if the ID is yet unknown! */
     Symbol (SymbolID ident) : unique (ident) { jassert (SymbolTable::instance().contains (ident)); }
-
-    /** Since Symbol is a reference to a SymbolTableEntry, copying a Symbol merely copies that reference */
-    Symbol (Symbol&& other);
     
     /** Since Symbol is a reference to a SymbolTableEntry, copying a Symbol merely copies that reference */
     Symbol (const Symbol& other);
     
-    /** Silently convert Symbol to int, so it mostly behaves like an integer */
-    operator int() const { return unique; }
-    
-    /** Silently convert const String&, so it mostly behaves like an String where expected */
-    operator const String&() const { return toString(); }
-
     /** Deleting a Symbol decrements the reference count of the SymbolTableEntry with its name */
     ~Symbol();
     
     /** Looks up the SymbolTableEntry associated with the Symbol */
     SymbolTableEntry& lookup () const;
-
+    
+    /** Implicitly convert to const String& */
+    operator const String&() const { return toString(); }
+    
+    /** Implicitly convert Symbol to int */
+    operator SymbolID() const { return unique; }
+    
     /** Compares two symbols by looking at their unique integer ID (fast) */
     inline bool operator== (const Symbol& other) const noexcept         { return unique == other.unique; }
     
@@ -197,8 +194,11 @@ public:
     /** Returns this symbol as a StringRef. */
     operator StringRef() const                                          { return lookup().name; }
     
+    /** Return the unique SymbolID */
+    inline SymbolID key() const                                         { return unique; }
+    
     /** Returns a pre-cached hash of the symbol's name, which is a fast lookup */
-    int hash() const                                                    { return lookup().hash; }
+    int hash() const noexcept                                           { return lookup().hash; }
 
     /** Returns true if this Symbol is not null */
     bool isValid() const noexcept                                       { return unique != 0; }
@@ -220,3 +220,14 @@ private:
             
 } // namespace ans
 
+namespace std
+{
+    /** Extend std::hash function */
+    template <> struct hash<ans::Symbol>
+    {
+        size_t operator()(const ans::Symbol& key) const
+        {
+            return key.hash();
+        }
+    };
+}

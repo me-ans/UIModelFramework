@@ -31,7 +31,6 @@ typedef SymbolID Aspect;
 class Aspects
 {
 public:
-    using Super = SortedSet<Aspect>;
     
     Aspects ();
     Aspects (Aspect a);
