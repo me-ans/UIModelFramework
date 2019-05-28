@@ -116,7 +116,7 @@ String SymbolTableEntry::print () const
     out << "[" << unique << "] " << name << " <" << references << ">";
     return out;
 }
-
+    
 /****************************************************************************************/
 
 Symbol::~Symbol()

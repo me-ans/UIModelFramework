@@ -13,20 +13,20 @@
 /** Use this macro to initialise global Symbols in cpp files */
 #define INIT_SYMBOL(c,e) Symbol c::e = Symbol(#e);
 
-/**
- Symbol generates a default hash for its name on creation only once. Subsequently the default
- hash is wrapped with modulo around whatever bounds are required when the Symbol is hashed,
- e.g. in a HashMap. This upper limit for the default hash should be high enough to accommodate
- the size of your biggest containers.
- */
-#define SymbolHashUpperLimit 16384*32
-
 namespace ans
 {
 using namespace juce;
 
 /** Defines which primitive type to use as a Symbol's unique ID */
 typedef int SymbolID;
+    
+/**
+ Symbol generates a default hash for its name on creation only once. Subsequently the default
+ hash is wrapped with modulo around whatever bounds are required when the Symbol is hashed,
+ e.g. in a HashMap. This upper limit for the default hash should be high enough to accommodate
+ the size of your biggest containers.
+ */
+const size_t SymbolHashUpperLimit = std::numeric_limits<size_t>::max();
 
 /** SymbolTableEntry is a utilty class for SymbolTable (@see SymbolTable, Symbol) */
 
@@ -48,7 +48,9 @@ public:
         name (literal),
         references (1)
     {
-        hash = DefaultHashFunctions::generateHash (literal, SymbolHashUpperLimit);
+        //hash = DefaultHashFunctions::generateHash (literal, SymbolHashUpperLimit);
+        std::hash<std::string> h;
+        hash = h(name.toRawUTF8());
     }
     
     ~SymbolTableEntry() noexcept {}
@@ -68,7 +70,7 @@ protected:
         
     SymbolID     unique;
     const String name;
-    int          hash;
+    size_t       hash;
     int          references;
         
     JUCE_LEAK_DETECTOR (SymbolTableEntry)
@@ -198,7 +200,7 @@ public:
     inline SymbolID key() const                                         { return unique; }
     
     /** Returns a pre-cached hash of the symbol's name, which is a fast lookup */
-    int hash() const noexcept                                           { return lookup().hash; }
+    size_t hash() const noexcept                                        { return lookup().hash; }
 
     /** Returns true if this Symbol is not null */
     bool isValid() const noexcept                                       { return unique != 0; }
@@ -231,3 +233,4 @@ namespace std
         }
     };
 }
+

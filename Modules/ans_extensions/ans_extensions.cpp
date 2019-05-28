@@ -6,3 +6,4 @@
 
 #include "core/ans_Symbol.cpp"
 #include "core/ans_Model.cpp"
+#include "core/ans_Printable.cpp"

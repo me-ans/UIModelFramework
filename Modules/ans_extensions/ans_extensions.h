@@ -56,19 +56,21 @@
 /*
 namespace ans
 {
-    class Metaclass;
-    class Symbol;
-    class SymbolTable;
-    class SymbolTableEntry;
-    class Aspects;
-    class Dependent;
-    class Model;
+ class Metaclass;
+ class Symbol;
+ class SymbolTable;
+ class SymbolTableEntry;
+ class Aspects;
+ class Dependent;
+ class Model;
+ class Printable;
 }
  */
 
 #include "core/ans_Metaclass.h"
 #include "core/ans_Symbol.h"
 #include "core/ans_Model.h"
+#include "core/ans_Printable.h"
 
 #if ANS_INCLUDE_NAMESPACE
 using namespace ans;
